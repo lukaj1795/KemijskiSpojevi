@@ -1,0 +1,115 @@
+﻿@{
+
+    ViewData["Title"] = "Spojevi";
+}
+
+<div class="row">
+
+    <table id="spojeviTable"
+           class="table ">
+        <thead id="tableHead">
+            <tr>
+                <th>Naziv</th>
+                <th>Vrsta</th>
+                <th>Elementi</th>
+                <th></th>
+            </tr>
+        </thead>
+    </table>
+
+</div>
+<div class="row">
+    <div class="col-sm-6">
+        <button type="button" id="addButton"
+                class="btn btn-primary"
+                onclick="clearClick();">
+            Počisti formu
+        </button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Spoj
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label for="productname">Naziv servisera</label>
+                    <input type="text" id="productname"
+                           class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="url">Vrsta</label>
+                    <input type="text" id="type"
+                           class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="element">
+                        Element
+                    </label>
+                    <input type="text" id="element"
+                           class="form-control" />
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <button type="button" id="updateButton"
+                                class="btn btn-primary"
+                                onclick="updateClick();">
+                            Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section scripts{
+    @*<script src="~/lib/jquery-ui/jquery-ui.js"></script>*@
+    <script type="text/javascript">
+        function SpojeviList() {
+            $.ajax({
+                url: baseUrl + '/api/Spojevi/',
+                type: 'GET',
+                dataType: 'json',
+                success: function (products) {
+                    fillSpojevi(products);
+                },
+                error: function (request, message, error) {
+                    handleException(request, message, error);
+                }
+            });
+        }
+
+        function handleException(request, message,
+            error) {
+            var msg = "";
+            msg += "Code: " + request.status + "\n";
+            msg += "Text: " + request.statusText + "\n";
+            if (request.responseJSON != null) {
+                msg += "Message:" +
+                    request.responseJSON.value + "\n";
+            }
+            //msg += "Error:" + error;
+            alert(msg);
+        }
+
+
+        function clearClick() {
+            formClear();
+        }
+
+        function formClear() {
+            $("#productname").val("");
+            $("#element").val("");
+            $("#type").val("");
+            $("#updateButton").text("Add");
+        }
+
+    </script>
+
+}
