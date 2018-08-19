@@ -1,0 +1,38 @@
+﻿@model Kemijski_spojevi.Database.SpojElement
+
+@{
+    ViewData["Title"] = "EditCount";
+}
+
+<h2>EditCount</h2>
+
+<h4>SpojElement</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="EditCount">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="SpojId" />
+            <div>
+            <label> Spoj @Model.Spoj.Name</label>
+            </div>
+            <input type="hidden" asp-for="ElementId" /> 
+            <div>
+            <label>Element @Model.Element.Name</label>
+            </div>
+    <div class="form-group">
+        <label asp-for="Count" class="control-label"></label>
+        <input asp-for="Count" class="form-control" />
+        <span asp-validation-for="Count" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Save" class="btn btn-default" />
+    </div>
+    </form>
+</div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

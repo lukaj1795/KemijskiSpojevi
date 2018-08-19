@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kemijski_spojevi.Database
 {
@@ -7,6 +8,7 @@ namespace Kemijski_spojevi.Database
     {
         public int SpojId { get; set; }
         public int ElementId { get; set; }
+        
         public int Count { get; set; }
 
         public Element Element { get; set; }

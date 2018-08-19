@@ -40,10 +40,10 @@ namespace Kemijski_spojevi.Controllers
         }
 
 
-
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,TypeId")] Spoj spoj,ICollection<int> Elements)
+        public async Task<IActionResult> Create(int id,[Bind("Id,Name,TypeId")] Spoj spoj,ICollection<int> Elements)
         {
 
 
@@ -80,7 +80,7 @@ namespace Kemijski_spojevi.Controllers
                 return NotFound();
             }
 
-            var spoj = await _context.Spoj.SingleOrDefaultAsync(m => m.Id == id);
+            var spoj = await _context.Spoj.Include(s=>s.SpojElement).ThenInclude(s=>s.Element).SingleOrDefaultAsync(m => m.Id == id);
             if (spoj == null)
             {
                 return NotFound();
@@ -94,32 +94,58 @@ namespace Kemijski_spojevi.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,TypeId")] Spoj spoj)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,TypeId")] Spoj spoj, ICollection<int> Elements)
         {
             if (id != spoj.Id)
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
+            if (Elements.Count >= Spoj.MinSizeOfElements)
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    _context.Update(spoj);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SpojExists(spoj.Id))
+                    try
                     {
-                        return NotFound();
+
+                        var list = new List<SpojElement>();
+                        //Add elements to compound
+                        foreach (var elem in Elements)
+                        {
+                            if (!SpojElementExists(spoj.Id, elem))
+                            {
+                                //until the ui supports entering count for each element set it to 1 and later edit it
+                                list.Add(new SpojElement() { Count = 1, ElementId = elem, SpojId = spoj.Id });
+                            }
+
+                        }
+                        //Remove elements from compound
+                        foreach (var elem2 in _context.SpojElement.Where(s=>s.SpojId==spoj.Id).Select(s => s.Element).ToList())
+                        {
+                            if (!Elements.Contains(elem2.Id))
+                            {
+                                var spojElementToDelete = _context.SpojElement.FirstOrDefault(s => s.SpojId == spoj.Id && s.ElementId == elem2.Id);
+                                _context.Remove(spojElementToDelete);
+                            }
+                        }
+
+                        _context.AddRange(list);
+                        _context.Update(spoj);
+                        await _context.SaveChangesAsync();
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
-                        throw;
+                        if (!SpojExists(spoj.Id))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
+                
             }
             ViewDataSet();
             var spojVM = new SpojVM();
@@ -139,5 +165,51 @@ namespace Kemijski_spojevi.Controllers
         {
             return _context.Spoj.Any(e => e.Id == id);
         }
+
+        private bool SpojElementExists(int spojId,int elementId)
+        {
+            return _context.SpojElement.Include(s => s.Spoj).Include(s => s.Element).Any(m => m.ElementId == elementId & m.SpojId == spojId);
+        }
+
+        public IActionResult EditCount(int? spojId, int? elementId)
+        {
+            ViewData["Elements"] = new SelectList(_context.Element, "Id", "Name");
+            var spojElement = _context.SpojElement.Include(s => s.Spoj).Include(s => s.Element).SingleOrDefault(m => m.ElementId == elementId & m.SpojId == spojId);
+            return View(spojElement);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditCount(int spojId, int elementId, [Bind("SpojId,ElementId,Count")] SpojElement spojElement)
+        {
+            ViewData["Elements"] = new SelectList(_context.Element, "Id", "Name");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(spojElement);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!SpojElementExists(spojId,elementId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+
+
+            return View(spojElement);
+        }
+
+
+
     }
 }

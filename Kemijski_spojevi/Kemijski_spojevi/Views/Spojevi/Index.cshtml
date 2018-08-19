@@ -35,7 +35,7 @@
                 <td>
                     @foreach (var se in s.SpojElement)
                     {
-                        <span>@se.Element.Name @se.Count</span>
+                        <span>@se.Element.Name <a asp-action="EditCount"  asp-route-spojId="@se.SpojId" asp-route-elementId="@se.ElementId">@se.Count</a></span>
 
                     }
             </td>
