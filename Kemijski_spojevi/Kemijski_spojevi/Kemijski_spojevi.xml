@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Kemijski_spojevi</name>
+    </assembly>
+    <members>
+        <member name="M:Kemijski_spojevi.Controllers.SpojeviController.ViewDataSet">
+            <summary>
+            Sets the data set for Spoj form
+            </summary>
+        </member>
+    </members>
+</doc>
