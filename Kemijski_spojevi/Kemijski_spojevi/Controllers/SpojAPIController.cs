@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Kemijski_spojevi.Database;
+using Kemijski_spojevi.Models;
 
 namespace Kemijski_spojevi.Controllers
 {
@@ -20,14 +21,20 @@ namespace Kemijski_spojevi.Controllers
             _context = context;
         }
 
-        // GET: api/Spojs
+        // GET: api/Spoj
         [HttpGet]
-        public IEnumerable<Spoj> GetSpoj()
+        public async Task<IActionResult> GetSpoj()
         {
-            return _context.Spoj;
+            var elements = _context.SpojElement.Select(s => new SpojElementAPIModel() {
+                SpojId=s.SpojId,Count=s.Count,Element=s.Element.Name,ElementId=s.ElementId
+            }).ToList();
+            var l = await _context.Spoj.Select(s => new SpojAPIModel() {
+                ElementCounts=elements.Where(a=>a.SpojId==s.Id), Name = s.Name, Id = s.Id, TypeName = s.Type.Name
+            }).ToListAsync();
+            return Ok(l);
         }
 
-        // GET: api/Spojs/5
+        // GET: api/Spoj/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSpoj([FromRoute] int id)
         {
@@ -46,7 +53,7 @@ namespace Kemijski_spojevi.Controllers
             return Ok(spoj);
         }
 
-        // PUT: api/Spojs/5
+        // PUT: api/Spoj/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSpoj([FromRoute] int id, [FromBody] Spoj spoj)
         {
@@ -81,7 +88,7 @@ namespace Kemijski_spojevi.Controllers
             return NoContent();
         }
 
-        // POST: api/Spojs
+        // POST: api/Spoj
         [HttpPost]
         public async Task<IActionResult> PostSpoj([FromBody] Spoj spoj)
         {
@@ -96,7 +103,7 @@ namespace Kemijski_spojevi.Controllers
             return CreatedAtAction("GetSpoj", new { id = spoj.Id }, spoj);
         }
 
-        // DELETE: api/Spojs/5
+        // DELETE: api/Spoj/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSpoj([FromRoute] int id)
         {

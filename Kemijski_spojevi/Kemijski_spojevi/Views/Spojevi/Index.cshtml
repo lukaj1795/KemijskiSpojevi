@@ -13,7 +13,7 @@
 
 
 <a asp-action="Create" title="Dodaj novi spoj">
-    <button class="glyphicon glyphicon-plus"></button>
+    <button type="button" class="btn btn-default glyphicon glyphicon-plus"></button>
 </a>
 <div class="row">
 
@@ -27,7 +27,8 @@
                 <th></th>
             </tr>
         </thead>
-        @foreach (var s in Model)
+        <tbody>
+       @* @foreach (var s in Model)
         {
             <tr>
                 <td>@s.Name</td>
@@ -39,10 +40,11 @@
 
                     }
             </td>
-            <td><a asp-action="Edit" asp-route-id="@s.Id"><button class="glyphicon glyphicon-edit"></button></a><button class="glyphicon glyphicon-trash" onclick="Delete(this)" data-id="@s.Id"></button></td>
+            <td><a asp-action="Edit" asp-route-id="@s.Id"><button type="button" class="btn btn-default glyphicon glyphicon-edit"></button></a><button type="button" class="btn btn-default glyphicon glyphicon-trash" onclick="Delete(this)" data-id="@s.Id"></button></td>
         </tr>
-
-    }
+       
+        } *@
+        </tbody>
     </table>
 
 </div>
@@ -101,7 +103,7 @@
 @section scripts{
 
 
-<script>
+<script type="text/javascript">
 
     var getUrl = window.location;
     var baseUrl = getUrl.protocol + "//" + getUrl.host + "";
@@ -109,6 +111,86 @@
     if (!bla.endsWith("undefined")) {
         baseUrl += bla;
     }
+
+    $(document).ready(function () {
+        spojList();
+    })
+
+
+    function spojList() {
+        // Zove web api servis da dobije sve podatke u tablici Spoj
+        $.ajax({
+            url: baseUrl + '/api/Spoj/',
+            type: 'GET',
+            dataType: 'json',
+            success: function (products) {
+                spojListSuccess(products);
+
+            },
+            error: function (request, message, error) {
+                handleException(request, message, error);
+            }
+        });
+    }
+
+    function spojListSuccess(spojevi) {
+        // Iterate over the collection of data
+        $.each(spojevi, function (index, spoj) {
+            // Add a row to the Product table
+            productAddRow(spoj);
+        });
+    }
+
+
+    function productAddRow(product) {
+        // Check if <tbody> tag exists, add one if not
+        if ($("#spojeviTable tbody").length == 0) {
+            $("#spojeviTable").append("<tbody></tbody>");
+        }
+        // Append row to <table>
+        $("#spojeviTable tbody").append(
+            productBuildTableRow(product));
+    }
+
+
+    function productBuildTableRow(product) {
+        var x = 0;
+        var ret =
+            "<tr>" +
+            "<td>" + product.name + "</td>" +
+            "<td>" + product.typeName + "</td>"
+            + "<td>";
+        
+        for (i = 0; i < product.elementCounts.length; i++) {
+            var se = product.elementCounts[i];
+            ret+=se.element+" "+"<a href='Spojevi/EditCount?spojId="+se.spojId+"&elementId="+se.elementId+"'>"+se.count+"</a> "
+
+        }
+        ret+="</td>" +
+            "<td>" +
+            "<a href='Spojevi/Edit/"+product.id + "'><button type='button' " +
+            ";' " +
+            "class='btn btn-default' " +
+            "data-id='" + product.id + "'>" +
+            "<span class='glyphicon glyphicon-edit' />"
+            + "</button></a>" +
+            "<button type='button' " +
+            "onclick='Delete(this);' " +
+            "class='btn btn-default' " +
+            "data-id='" + product.id + "'>" +
+            "<span class='glyphicon glyphicon-trash' />" +
+            "</button>" +
+            "</td></tr>";
+        //alert(product.obavljeniServisi.length);
+       
+            
+        
+
+        return ret;
+    }
+
+
+
 
 
     function Delete(ctl) {
