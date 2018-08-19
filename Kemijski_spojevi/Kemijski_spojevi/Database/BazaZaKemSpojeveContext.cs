@@ -1,28 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Kemijski_spojevi.Database
 {
-    public partial class DatabaseContext : DbContext
+    public partial class BazaZaKemSpojeveContext : DbContext
     {
+        public BazaZaKemSpojeveContext()
+        {
+        }
 
-        public virtual DbSet<Spoj> Spoj { get; set; }
+        public BazaZaKemSpojeveContext(DbContextOptions<BazaZaKemSpojeveContext> options)
+            : base(options)
+        {
+        }
 
         public virtual DbSet<Element> Element { get; set; }
-
+        public virtual DbSet<Spoj> Spoj { get; set; }
         public virtual DbSet<SpojElement> SpojElement { get; set; }
-
         public virtual DbSet<VrstaSpoja> VrstaSpoja { get; set; }
 
-        public DatabaseContext() { }
-
-        public DatabaseContext( DbContextOptions options) : base(options)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+                optionsBuilder.UseSqlServer(@"Data Source=LUKA\SERVERZAOPP;Initial Catalog=BazaZaKemSpojeve;Integrated Security=True");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -49,8 +53,6 @@ namespace Kemijski_spojevi.Database
                     .HasForeignKey(d => d.TypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Spoj_VrstaSpoja");
-
-
             });
 
             modelBuilder.Entity<SpojElement>(entity =>
@@ -66,7 +68,7 @@ namespace Kemijski_spojevi.Database
                 entity.HasOne(d => d.Spoj)
                     .WithMany(p => p.SpojElement)
                     .HasForeignKey(d => d.SpojId)
-                    .OnDelete(DeleteBehavior.Cascade)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_SpojElement_Spoj");
             });
 
@@ -76,14 +78,6 @@ namespace Kemijski_spojevi.Database
                     .IsRequired()
                     .HasMaxLength(50);
             });
-
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(@"Data Source=LUKA\SERVERZAOPP;Initial Catalog=BazaZaKemSpojeve;Integrated Security=True");
-            }
         }
     }
 }

@@ -1,0 +1,16 @@
+﻿@model Kemijski_spojevi.Models.SpojVM
+
+<div class="form-group">
+    <label asp-for="Name" class="control-label"></label>
+    <input asp-for="Name" class="form-control" />
+    <span asp-validation-for="Name" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="TypeID" class="control-label"></label>
+    <select asp-for="TypeID" class="form-control" asp-items="ViewBag.TypeId"></select>
+    
+</div>
+<div class="form-group">
+    <label asp-for="Elements" class="control-label"></label>
+    <select asp-for="Elements" asp-items="ViewBag.Elements" multiple class="form-control chosen-select"></select>
+</div>
