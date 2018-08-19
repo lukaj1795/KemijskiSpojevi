@@ -28,8 +28,8 @@ namespace Kemijski_spojevi.Controllers
         // GET: /<controller>/
         public IActionResult Index()
         {
-
-            return View(_context.Spoj.Include(s=>s.Type).Include(s=>s.SpojElement).ThenInclude(s=>s.Element).ToList());
+            ViewData["TypeId"] = new SelectList(_context.VrstaSpoja, "Id", "Name");
+            return View();
         }
 
 

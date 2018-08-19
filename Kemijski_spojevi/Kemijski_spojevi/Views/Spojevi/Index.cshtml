@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Kemijski_spojevi.Database.Spoj>
+﻿
 @{
 
     ViewData["Title"] = "Spojevi";
@@ -15,6 +15,11 @@
 <a asp-action="Create" title="Dodaj novi spoj">
     <button type="button" class="btn btn-default glyphicon glyphicon-plus"></button>
 </a>
+<div class="col-sm-12">
+    <select id="TypeId" asp-items="ViewBag.TypeId"></select>
+    <button onclick="filter()" class="glyphicon glyphicon-filter" title="filtriraj"></button>
+    <button onclick="spojList()" class="glyphicon glyphicon-remove" title="makni filter"></button>
+</div>
 <div class="row">
 
     <table id="spojeviTable"
@@ -28,22 +33,22 @@
             </tr>
         </thead>
         <tbody>
-       @* @foreach (var s in Model)
-        {
-            <tr>
-                <td>@s.Name</td>
-                <td>@s.Type.Name</td>
-                <td>
-                    @foreach (var se in s.SpojElement)
-                    {
-                        <span>@se.Element.Name <a asp-action="EditCount"  asp-route-spojId="@se.SpojId" asp-route-elementId="@se.ElementId">@se.Count</a></span>
+            @* @foreach (var s in Model)
+                {
+                    <tr>
+                        <td>@s.Name</td>
+                        <td>@s.Type.Name</td>
+                        <td>
+                            @foreach (var se in s.SpojElement)
+                            {
+                                <span>@se.Element.Name <a asp-action="EditCount"  asp-route-spojId="@se.SpojId" asp-route-elementId="@se.ElementId">@se.Count</a></span>
 
-                    }
-            </td>
-            <td><a asp-action="Edit" asp-route-id="@s.Id"><button type="button" class="btn btn-default glyphicon glyphicon-edit"></button></a><button type="button" class="btn btn-default glyphicon glyphicon-trash" onclick="Delete(this)" data-id="@s.Id"></button></td>
-        </tr>
-       
-        } *@
+                            }
+                    </td>
+                    <td><a asp-action="Edit" asp-route-id="@s.Id"><button type="button" class="btn btn-default glyphicon glyphicon-edit"></button></a><button type="button" class="btn btn-default glyphicon glyphicon-trash" onclick="Delete(this)" data-id="@s.Id"></button></td>
+                </tr>
+
+                } *@
         </tbody>
     </table>
 
@@ -103,169 +108,160 @@
 @section scripts{
 
 
-<script type="text/javascript">
+    <script type="text/javascript">
 
-    var getUrl = window.location;
-    var baseUrl = getUrl.protocol + "//" + getUrl.host + "";
-    var bla = "/" + getUrl.pathname.split('/')[1] + "/" + getUrl.pathname.split("/")[2] + "/" + getUrl.pathname.split("/")[3]
-    if (!bla.endsWith("undefined")) {
-        baseUrl += bla;
-    }
-
-    $(document).ready(function () {
-        spojList();
-    })
-
-
-    function spojList() {
-        // Zove web api servis da dobije sve podatke u tablici Spoj
-        $.ajax({
-            url: baseUrl + '/api/Spoj/',
-            type: 'GET',
-            dataType: 'json',
-            success: function (products) {
-                spojListSuccess(products);
-
-            },
-            error: function (request, message, error) {
-                handleException(request, message, error);
-            }
-        });
-    }
-
-    function spojListSuccess(spojevi) {
-        // Iterate over the collection of data
-        $.each(spojevi, function (index, spoj) {
-            // Add a row to the Product table
-            productAddRow(spoj);
-        });
-    }
-
-
-    function productAddRow(product) {
-        // Check if <tbody> tag exists, add one if not
-        if ($("#spojeviTable tbody").length == 0) {
-            $("#spojeviTable").append("<tbody></tbody>");
+        var getUrl = window.location;
+        var baseUrl = getUrl.protocol + "//" + getUrl.host + "";
+        var bla = "/" + getUrl.pathname.split('/')[1] + "/" + getUrl.pathname.split("/")[2] + "/" + getUrl.pathname.split("/")[3]
+        if (!bla.endsWith("undefined")) {
+            baseUrl += bla;
         }
-        // Append row to <table>
-        $("#spojeviTable tbody").append(
-            productBuildTableRow(product));
-    }
+
+        $(document).ready(function () {
+            spojList();
+        })
 
 
-    function productBuildTableRow(product) {
-        var x = 0;
-        var ret =
-            "<tr>" +
-            "<td>" + product.name + "</td>" +
-            "<td>" + product.typeName + "</td>"
-            + "<td>";
-        
-        for (i = 0; i < product.elementCounts.length; i++) {
-            var se = product.elementCounts[i];
-            ret+=se.element+" "+"<a href='Spojevi/EditCount?spojId="+se.spojId+"&elementId="+se.elementId+"'>"+se.count+"</a> "
-
-        }
-        ret+="</td>" +
-            "<td>" +
-            "<a href='Spojevi/Edit/"+product.id + "'><button type='button' " +
-            ";' " +
-            "class='btn btn-default' " +
-            "data-id='" + product.id + "'>" +
-            "<span class='glyphicon glyphicon-edit' />"
-            + "</button></a>" +
-            "<button type='button' " +
-            "onclick='Delete(this);' " +
-            "class='btn btn-default' " +
-            "data-id='" + product.id + "'>" +
-            "<span class='glyphicon glyphicon-trash' />" +
-            "</button>" +
-            "</td></tr>";
-        //alert(product.obavljeniServisi.length);
-       
-            
-        
-
-        return ret;
-    }
-
-
-
-
-
-    function Delete(ctl) {
-        var id = $(ctl).data("id");
-        if (confirm('Obrisati zapis?')) {
+        function spojList() {
+            // Zove web api servis da dobije sve podatke u tablici Spoj
             $.ajax({
-                url: baseUrl + "/api/Spoj/" + id,
-                type: 'DELETE',
-                success: function (product) {
-                    $(ctl).parents("tr").remove();
+                url: baseUrl + '/api/Spoj/',
+                type: 'GET',
+                dataType: 'json',
+                success: function (products) {
+                    deleteSpojTable();
+                    spojListSuccess(products);
+
                 },
                 error: function (request, message, error) {
                     handleException(request, message, error);
                 }
             });
         }
-    }
 
+        function filterSpojList(filter) {
+            
+            $.ajax({
+                url: baseUrl + '/api/Spoj/' + filter,
+                type: 'GET',
+                dataType: 'json',
+                success: function (products) {
+                    deleteSpojTable();
+                    spojListSuccess(products);
 
-    function handleException(request, message,
-        error) {
-        var msg = "";
-        msg += "Code: " + request.status + "\n";
-        msg += "Text: " + request.statusText + "\n";
-        if (request.responseJSON != null) {
-            msg += "Message:" +
-                request.responseJSON.value + "\n";
+                },
+                error: function (request, message, error) {
+                    handleException(request, message, error);
+                }
+
+            });
         }
-        //msg += "Error:" + error;
-        alert(msg);
-    }
 
-</script>
+        function spojListSuccess(spojevi) {
+            // Iterate over the collection of data
+            $.each(spojevi, function (index, spoj) {
+                // Add a row to the Product table
+                productAddRow(spoj);
+            });
+        }
 
-    @*<script src="~/lib/jquery-ui/jquery-ui.js"></script>*@
-    @*<script type="text/javascript">
-            function SpojeviList() {
+
+        function productAddRow(product) {
+            // Check if <tbody> tag exists, add one if not
+            if ($("#spojeviTable tbody").length == 0) {
+                $("#spojeviTable").append("<tbody></tbody>");
+            }
+            // Append row to <table>
+            $("#spojeviTable tbody").append(
+                productBuildTableRow(product));
+        }
+
+
+        function productBuildTableRow(product) {
+            var x = 0;
+            var ret =
+                "<tr>" +
+                "<td>" + product.name + "</td>" +
+                "<td>" + product.typeName + "</td>"
+                + "<td>";
+
+            for (i = 0; i < product.elementCounts.length; i++) {
+                var se = product.elementCounts[i];
+                ret += se.element + " " + "<a href='Spojevi/EditCount?spojId=" + se.spojId + "&elementId=" + se.elementId + "'>" + se.count + "</a> "
+
+            }
+            ret += "</td>" +
+                "<td>" +
+                "<a href='Spojevi/Edit/" + product.id + "'><button type='button' " +
+                ";' " +
+                "class='btn btn-default' " +
+                "data-id='" + product.id + "'>" +
+                "<span class='glyphicon glyphicon-edit' />"
+                + "</button></a>" +
+                "<button type='button' " +
+                "onclick='Delete(this);' " +
+                "class='btn btn-default' " +
+                "data-id='" + product.id + "'>" +
+                "<span class='glyphicon glyphicon-trash' />" +
+                "</button>" +
+                "</td></tr>";
+            //alert(product.obavljeniServisi.length);
+
+
+
+
+            return ret;
+        }
+
+
+
+
+
+        function Delete(ctl) {
+            var id = $(ctl).data("id");
+            if (confirm('Obrisati zapis?')) {
                 $.ajax({
-                    url: baseUrl + '/api/Spojevi/',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (products) {
-                        fillSpojevi(products);
+                    url: baseUrl + "/api/Spoj/" + id,
+                    type: 'DELETE',
+                    success: function (product) {
+                        $(ctl).parents("tr").remove();
                     },
                     error: function (request, message, error) {
                         handleException(request, message, error);
                     }
                 });
             }
+        }
 
-            function handleException(request, message,
-                error) {
-                var msg = "";
-                msg += "Code: " + request.status + "\n";
-                msg += "Text: " + request.statusText + "\n";
-                if (request.responseJSON != null) {
-                    msg += "Message:" +
-                        request.responseJSON.value + "\n";
-                }
-                //msg += "Error:" + error;
-                alert(msg);
+
+        function handleException(request, message,
+            error) {
+            var msg = "";
+            msg += "Code: " + request.status + "\n";
+            msg += "Text: " + request.statusText + "\n";
+            if (request.responseJSON != null) {
+                msg += "Message:" +
+                    request.responseJSON.value + "\n";
             }
+            //msg += "Error:" + error;
+            alert(msg);
+        }
 
 
-            function clearClick() {
-                formClear();
-            }
+        function deleteSpojTable() {
+            $("tbody").children().remove()
+        }
 
-            function formClear() {
-                $("#productname").val("");
-                $("#element").val("");
-                $("#type").val("");
-                $("#updateButton").text("Add");
-            }
+        function filter() {
+            
+            var tid = document.getElementById("TypeId");
+            var filter = tid.value;
 
-        </script>*@
+            filterSpojList(filter);
+        }
+
+    </script>
+
+  
 
 }
